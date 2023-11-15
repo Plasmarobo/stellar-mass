@@ -80,6 +80,7 @@ impl<'a, 'b> System<'a> for Renderer<'b>
         let (args, renderdata) = data;
         let square = rectangle::square(0.0, 0.0, 50.0);
         let args = args.0;
+        
         let c = self.gl.draw_begin(args.viewport());
         // Clear the screen.
         clear([0.0,1.0,0.0,1.0], &mut self.gl);
@@ -89,8 +90,7 @@ impl<'a, 'b> System<'a> for Renderer<'b>
                 let transform = c
                                 .transform
                                 .trans(rd.pos[0], rd.pos[1])
-                                .rot_rad(rd.rot)
-                                .trans(-25.0, -25.0);
+                                .rot_rad(rd.rot);
 
                 match &rd.draw_data
                 {

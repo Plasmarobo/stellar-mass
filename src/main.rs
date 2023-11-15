@@ -39,9 +39,10 @@ fn main() {
 
     // Test entities
     shared_world.create_entity().with(RenderData::default()).build();
+    shared_world.create_entity().with(RenderData::new([25.0, 25.0], 0.0, DrawData::Color([0.0, 0.0, 1.0, 1.0]))).build();
 
     let mut dispatcher = DispatcherBuilder::new()
-        .with(Renderer::new(opengl), "renderer", &[])
+        .with_thread_local(Renderer::new(opengl))
         .build();
     dispatcher.setup(&mut shared_world);
 
