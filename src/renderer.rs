@@ -3,7 +3,8 @@ use graphics::types::Vec2d;
 use opengl_graphics::{Texture, OpenGL, GlGraphics, GlyphCache, TextureSettings};
 use piston::RenderArgs;
 use specs::prelude::*;
-use std::{fmt, any::Any};
+use std::fmt;
+use crate::camera2d::Camera2d;
 
 pub enum DrawData
 {
@@ -72,26 +73,28 @@ pub struct Renderer<'b>
 
 impl<'a, 'b> System<'a> for Renderer<'b>
 {
-    type SystemData = (Read<'a, LocalRenderArgs>, ReadStorage<'a, RenderData>);
+    type SystemData = (Read<'a, Camera2d>, Read<'a, LocalRenderArgs>, ReadStorage<'a, RenderData>);
 
     fn run(&mut self, data: Self::SystemData)
     {
         use graphics::*;
-        let (args, renderdata) = data;
+        let (camera, args, renderdata) = data;
         let square = rectangle::square(0.0, 0.0, 50.0);
         let args = args.0;
+        let camera = camera;
         
         let c = self.gl.draw_begin(args.viewport());
         // Clear the screen.
         clear([0.0,1.0,0.0,1.0], &mut self.gl);
         for rd in renderdata.join()
         {
-            
+                let cam_pos = camera.pos();
                 let transform = c
                                 .transform
-                                .trans(rd.pos[0], rd.pos[1])
-                                .rot_rad(rd.rot);
-
+                                .trans(rd.pos[0] * camera.zoom, rd.pos[1] * camera.zoom)
+                                .rot_rad(rd.rot)
+                                .trans(cam_pos[0], cam_pos[1])
+                                .scale(camera.zoom, camera.zoom);
                 match &rd.draw_data
                 {
                     DrawData::Color(color) => {

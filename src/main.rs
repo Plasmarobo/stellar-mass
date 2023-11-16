@@ -5,7 +5,7 @@ extern crate specs;
 
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{OpenGL, GlGraphics, GlyphCache, TextureSettings};
-use piston::{RenderArgs};
+use piston::{RenderArgs, MouseScrollEvent, MouseRelativeEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderEvent, UpdateEvent};
 use piston::window::{WindowSettings};
@@ -21,12 +21,16 @@ use material::MaterialInit;
 mod physnode;
 use physnode::{PhysNodeInit, DeltaTime};
 
+mod camera2d;
+use camera2d::Camera2d;
+
 fn main() {
     // Change this to OpenGL::V2_1 if not working.
     let opengl = OpenGL::V3_2;
     let mut shared_world = World::new();
     shared_world.insert(DeltaTime(0.0));
     shared_world.insert(LocalRenderArgs::default());
+    shared_world.insert(Camera2d::default());
     RenderDataInit(&mut shared_world);
     MaterialInit(&mut shared_world);
     PhysNodeInit(&mut shared_world);
@@ -48,6 +52,17 @@ fn main() {
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
+        if let Some(args) = e.mouse_scroll_args()
+        {
+            let mut cam = shared_world.write_resource::<Camera2d>();
+            cam.zoom += args[1] / 3.0;
+        }
+
+        if let Some(args) = e.mouse_relative_args() {
+            let mut cam = shared_world.write_resource::<Camera2d>();
+            cam.pos += args[0];
+            cam.pos += args[1];
+        }
 
         if let Some(args) = e.render_args() {
             let mut ra = shared_world.write_resource::<LocalRenderArgs>();
