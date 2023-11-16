@@ -5,9 +5,9 @@ extern crate specs;
 
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{OpenGL, GlGraphics, GlyphCache, TextureSettings};
-use piston::{RenderArgs, MouseScrollEvent, MouseRelativeEvent};
+use piston::{RenderArgs, MouseScrollEvent, MouseRelativeEvent, Button, MouseButton};
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderEvent, UpdateEvent};
+use piston::input::{RenderEvent, UpdateEvent, PressEvent, ReleaseEvent};
 use piston::window::{WindowSettings};
 use specs::prelude::*;
 use specs::WorldExt;
@@ -44,12 +44,12 @@ fn main() {
     // Test entities
     shared_world.create_entity().with(RenderData::default()).build();
     shared_world.create_entity().with(RenderData::new([25.0, 25.0], 0.0, DrawData::Color([0.0, 0.0, 1.0, 1.0]))).build();
+    shared_world.create_entity().with(RenderData::new([30.0, 30.0], 0.0, DrawData::Text("Hello World".to_string(), [1.0, 1.0, 1.0, 1.0]))).build();
 
     let mut dispatcher = DispatcherBuilder::new()
         .with_thread_local(Renderer::new(opengl))
-        .build();
-    dispatcher.setup(&mut shared_world);
-
+        .build_async(&mut shared_world);
+    let mut dragging = false;
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.mouse_scroll_args()
@@ -58,10 +58,27 @@ fn main() {
             cam.zoom += args[1] / 3.0;
         }
 
+        if let Some(Button::Mouse(button)) = e.press_args() {
+            if button == MouseButton::Left
+            {
+                dragging = true;
+            }
+        }
+
+        if let Some(Button::Mouse(button)) = e.release_args() {
+            if button == MouseButton::Left
+            {
+                dragging = false;
+            }
+        }
+
         if let Some(args) = e.mouse_relative_args() {
             let mut cam = shared_world.write_resource::<Camera2d>();
-            cam.pos += args[0];
-            cam.pos += args[1];
+            if (dragging)
+            {
+                cam.pos[0] += args[0];
+                cam.pos[1] += args[1];
+            }
         }
 
         if let Some(args) = e.render_args() {
@@ -74,7 +91,6 @@ fn main() {
                 let mut delta = shared_world.write_resource::<DeltaTime>();
                 *delta = DeltaTime(args.dt);
             }
-            dispatcher.dispatch(&mut shared_world);
             shared_world.maintain();
         }
     }

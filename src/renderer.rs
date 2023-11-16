@@ -104,7 +104,7 @@ impl<'a, 'b> System<'a> for Renderer<'b>
                         image(&(*(*tex)), transform, &mut self.gl);
                     },
                     DrawData::Text(txt, color) => {
-                        text(*color, 32, txt, &mut self.font, transform, &mut self.gl).unwrap();
+                        text(*color, 16, txt, &mut self.font, transform, &mut self.gl).unwrap();
                 }
             }
         }

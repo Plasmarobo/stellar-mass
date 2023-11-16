@@ -13,3 +13,6 @@ piston2d-opengl_graphics = "0.83.0"
 specs = "0.20.0"
 js-sandbox = "0.1.6"
 piston_window = "0.131.0"
+
+[features]
+"parallel" = []

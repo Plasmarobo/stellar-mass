@@ -1,5 +1,7 @@
 use specs::prelude::*;
 
+use crate::{renderer::RenderData, physnode::PhysNode};
+
 #[derive(Debug)]
 struct Material
 {
@@ -28,4 +30,26 @@ impl Component for Material
 pub fn MaterialInit(world: &mut World)
 {
     world.register::<Material>();
+}
+
+struct MaterialSimulation
+{
+    sim_clock: f64,
+    sim_rate: f64,
+}
+
+impl<'a> System<'a> for MaterialSimulation
+{
+    type SystemData = (ReadStorage<'a, Material>, ReadStorage<'a, RenderData>, ReadStorage<'a, PhysNode>);
+
+    fn run(&mut self, data: Self::SystemData)
+    {
+        let (mats, rds, phys) = data;
+        // Perform material sim updates
+        for (mat, rd, phy) in (&mats, &rds, phys.maybe()).join()
+        {
+            
+        } 
+        // Perform any updates to material + renderables
+    }
 }
